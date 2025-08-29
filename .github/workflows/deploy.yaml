@@ -19,43 +19,51 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-    - name: Login to ECR
-      run: |
-        aws ecr-public get-login-password --region $AWS_REGION | \
-        docker login --username AWS --password-stdin public.ecr.aws/i8o4q6e1
+      - name: Login to ECR
+        run: |
+          aws ecr-public get-login-password --region $AWS_REGION | \
+          docker login --username AWS --password-stdin public.ecr.aws/i8o4q6e1
 
-    - name: Build frontend Docker image
-      run: docker build -t $ECR_FRONTEND:${GITHUB_SHA} ./frontend
+      - name: Build frontend Docker image
+        run: |
+          docker build --no-cache -t $ECR_FRONTEND:${{ github.run_id }} ./frontend
+          docker tag $ECR_FRONTEND:${{ github.run_id }} $ECR_FRONTEND:latest
 
-    - name: Build backend Docker image
-      run: docker build -t $ECR_BACKEND:${GITHUB_SHA} ./backend
+      - name: Build backend Docker image
+        run: |
+          docker build --no-cache -t $ECR_BACKEND:${{ github.run_id }} ./backend
+          docker tag $ECR_BACKEND:${{ github.run_id }} $ECR_BACKEND:latest
 
-    - name: Push frontend image to ECR
-      run: docker push $ECR_FRONTEND:${GITHUB_SHA}
+      - name: Push frontend image to ECR
+        run: |
+          docker push $ECR_FRONTEND:${{ github.run_id }}
+          docker push $ECR_FRONTEND:latest
 
-    - name: Push backend image to ECR
-      run: docker push $ECR_BACKEND:${GITHUB_SHA}
+      - name: Push backend image to ECR
+        run: |
+          docker push $ECR_BACKEND:${{ github.run_id }}
+          docker push $ECR_BACKEND:latest
 
-    - name: Deploy to ECS - frontend
-      run: |
-        aws ecs update-service \
-          --cluster $ECS_CLUSTER \
-          --service $FRONTEND_SERVICE \
-          --force-new-deployment
+      - name: Deploy to ECS - frontend
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $FRONTEND_SERVICE \
+            --force-new-deployment
 
-    - name: Deploy to ECS - backend
-      run: |
-        aws ecs update-service \
-          --cluster $ECS_CLUSTER \
-          --service $BACKEND_SERVICE \
-          --force-new-deployment
+      - name: Deploy to ECS - backend
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $BACKEND_SERVICE \
+            --force-new-deployment
