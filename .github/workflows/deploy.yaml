@@ -36,8 +36,8 @@ jobs:
 
       - name: Build frontend Docker image
         run: |
-          docker build --no-cache -t $ECR_FRONTEND:${{ github.run_id }} ./frontend
-          docker tag $ECR_FRONTEND:${{ github.run_id }} $ECR_FRONTEND:latest
+          docker build -t $ECR_FRONTEND:${{ github.sha }} ./frontend
+          docker push $ECR_FRONTEND:${{ github.sha }}
 
       - name: Build backend Docker image
         run: |
