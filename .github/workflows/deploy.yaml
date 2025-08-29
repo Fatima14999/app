@@ -35,20 +35,16 @@ jobs:
         docker login --username AWS --password-stdin public.ecr.aws/i8o4q6e1
 
     - name: Build frontend Docker image
-      run: |
-        docker build -t $ECR_FRONTEND:${GITHUB_SHA} ./frontend
+      run: docker build -t $ECR_FRONTEND:${GITHUB_SHA} ./frontend
 
     - name: Build backend Docker image
-      run: |
-        docker build -t $ECR_BACKEND:${GITHUB_SHA} ./backend
+      run: docker build -t $ECR_BACKEND:${GITHUB_SHA} ./backend
 
     - name: Push frontend image to ECR
-      run: |
-        docker push $ECR_FRONTEND:${GITHUB_SHA}
+      run: docker push $ECR_FRONTEND:${GITHUB_SHA}
 
     - name: Push backend image to ECR
-      run: |
-        docker push $ECR_BACKEND:${GITHUB_SHA}
+      run: docker push $ECR_BACKEND:${GITHUB_SHA}
 
     - name: Deploy to ECS - frontend
       run: |
