@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My App</title>
+</head>
+<body>
+  <h1>📋 My Items</h1>
+  <h1>📋 My Items</h1>
+
+  <input id="input" placeholder="Enter something" />
+  <button onclick="addItem()">Add</button>
+
+  <ul id="list"></ul>
+
+  <script>
+    const API_BASE = "http://localhost:5000";
+
+    async function loadItems() {
+      const res = await fetch(`${API_BASE}/get`);
+      const data = await res.json();
+      const list = document.getElementById("list");
+      list.innerHTML = "";
+      data.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item.text;
+        list.appendChild(li);
+      });
+    }
+
+    async function addItem() {
+      const input = document.getElementById("input");
+      await fetch(`${API_BASE}/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: input.value })
+      });
+      input.value = "";
+      loadItems();
+    }
+
+    loadItems();
+  </script>
+</body>
+</html>
